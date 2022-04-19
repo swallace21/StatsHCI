@@ -30,7 +30,7 @@ import statsmodels.api as sm
 alpha = 0.05
 
 def mean_sd(name,data):
-   print('%s (M = %.3f SD = %.3f, N = %.3f, MAX = %.3f, MIN = %.3f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
+   print('%s (M = %.2f SD = %.2f, N = %.2f, MAX = %.2f, MIN = %.2f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
 
 ### standardized effect size
 # function to calculate Cohen's d for independent samples
@@ -45,7 +45,8 @@ def cohensd(d1,d2):
    u1, u2 = mean(d1), mean(d2)
    # calculate the effect size
    d = (u1 - u2) / s
-   print(f'd = {d}\n')
+   #print(f"""cohen's d = {d}\n""")
+   return d
 
 # for use in chi-square,mcnemar, etc...
 def create_contigency_table(d1,d2):
@@ -217,7 +218,7 @@ def ttest_independent(d1,d2,equal_var):
    mean_sd('d2: ',d2)
    t, p = sp.ttest_ind(d1,d2,equal_var=equal_var)
    d = cohensd(d1,d2)
-   print(f't({df}) = {round(t,2)}, p = {round(p,4)}, d = {round(p,4)}\n')
+   print(f't({df}) = {round(t,2)}, p = {round(p,4)}, d = {round(d,3)}\n')
 
 
 def ttest_repeated_samples(d1,d2):
@@ -227,7 +228,7 @@ def ttest_repeated_samples(d1,d2):
    df = len(d1) - 1
    t, p = sp.ttest_rel(d1,d2)
    d = cohensd(d1,d2)
-   print(f't({df}) = {round(t,2)}, p = {round(p,4)}, d = {round(p,4)}\n')
+   print(f't({df}) = {round(t,2)}, p = {round(p,4)}, d = {round(d,4)}\n')
 
 
 # McNemar Test - non-parametric binary data
