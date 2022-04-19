@@ -13,6 +13,8 @@ Feel free to add your own.
 
 # Usage
 
+```
 import statshci as st
 
 st.shapiro_wilks(array1,array2)
+```
