@@ -18,3 +18,11 @@ import statshci as st
 
 st.shapiro_wilks(array1,array2)
 ```
+
+# Dependencies
+
+```
+numpy
+pandas
+scipy
+```
