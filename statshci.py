@@ -75,10 +75,7 @@ def shapiro_wilks(d1,d2):
    """
    data should contain 2 arrays
    """
-   # seed the random number generator
-   seed(1)
-   # generate univariate observations
-   data = 5 * randn(100) + 50
+   data = d1 + d2
    # normality test
    stat, p = shapiro(data)
    #print('shapiro_wilk statistics = %.3f, p = %.3f' % (stat, p))
