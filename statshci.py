@@ -87,10 +87,8 @@ def shapiro_wilks(d1,d2):
       else:
          ttest_repeated_samples(d1,d2)
    else:
-      print('Sample does not look Gaussian (reject H0) --- Data is not normally distributed')
-      print('The test you should run is: Mann-Whitney U')
+      print(f'Sample does not look Gaussian (p = {p}, reject H0) --- Data is not normally distributed -- use Mann-Whitney U')
       mann_whitney_u(d1,d2)
-      exit()
 
 
 # normality test for D’Agostino’s K^2 test
@@ -136,15 +134,17 @@ def mann_whitney_u(d1,d2):
    A random rank order would mean that the two samples are not different, 
    while a cluster of one sample values would indicate a difference between them.
    """
-   print('\nMann Whitney U\n')
+   print('Mann Whitney U')
    stat, p = mannwhitneyu(d1, d2)
    print('Statistics = %.3f, p = %.3f' % (stat, p))
    # interpret
    alpha = 0.05
+   """
    if p > alpha:
       print('Same distribution (fail to reject H0)')
    else:
       print('Different distribution (reject H0)')
+   """
 
 
 def wilcoxon_signed(d1,d2):
