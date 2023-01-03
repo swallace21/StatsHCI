@@ -22,6 +22,7 @@ from scipy.stats import levene
 from scipy.stats import mannwhitneyu
 from scipy.stats import wilcoxon
 from scipy.stats import kruskal
+from scipy.stats import chisquare
 
 from math import sqrt
 
@@ -78,7 +79,7 @@ def shapiro_wilks(d1,d2):
    data = d1 + d2
    # normality test
    stat, p = shapiro(data)
-   #print('shapiro_wilk statistics = %.3f, p = %.3f' % (stat, p))
+   print('shapiro_wilks: statistic = %.3f, p = %.3f' % (stat, p))
    
    if p > alpha:
       print('Shapiro-Wilks - Sample looks Gaussian (fail to reject H0)')
@@ -87,7 +88,7 @@ def shapiro_wilks(d1,d2):
       else:
          ttest_repeated_samples(d1,d2)
    else:
-      print(f'Sample does not look Gaussian (p = {p}, reject H0) --- Data is not normally distributed -- use Mann-Whitney U')
+      print(f'Sample is not Gaussian (reject H0) - Data is not normally distributed - use Mann-Whitney U')
       mann_whitney_u(d1,d2)
 
 
@@ -135,6 +136,8 @@ def mann_whitney_u(d1,d2):
    while a cluster of one sample values would indicate a difference between them.
    """
    print('Mann Whitney U')
+   mean_sd('d1: ',d1)
+   mean_sd('d2: ',d2)
    stat, p = mannwhitneyu(d1, d2)
    print('Statistics = %.3f, p = %.3f' % (stat, p))
    # interpret
@@ -238,6 +241,57 @@ def mcnemar(d1,d2):
    odds_ratio = (table[0][1] / table[0][0]) / (table[1][1] / table[1][0])
    # summarize the finding
    print('$X^2 = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (result.statistic, result.pvalue, odds_ratio))
+
+# CHI Squared Test
+def chi2_old(d1y,d1n,d2y,d2n):
+   print('\nCHI Squared test')
+   print(d1y,d1n,d2y,d2n)
+   # print('%s (M = %.2f SD = %.2f, N = %.2f, MAX = %.2f, MIN = %.2f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
+   d1_sum = (d1y+d1n)
+   d2_sum = (d2y+d2n)
+   print('Conversion Rate D1: = %.3f' % ((d1y/d1_sum)))
+   print('Conversion Rate D2: = %.3f' % ((d2y/d2_sum)))
+   #chisq, p = chisquare([44, 56], [50, 50])
+   chisq, p = chisquare([7153, 2536], [469, 9220])
+   print(f'X^2 = {chisq}, p = {p:4.2f}')
+   
+   chisq, p = chisquare([7153, 2536], [469, 9220])
+   print(f'X^2 = {chisq}, p = {p:4.2f}')
+   
+   chisq, p = chisquare([7153, 2536], [469, 9220])
+   print(f'X^2 = {chisq}, p = {p:4.2f}')
+
+   chisq, p = chisquare([8.3661, 9.4117], [5.3973, 6.0721])
+   print(f'X^2 = {chisq}, p = {p:4.2f}')
+
+def chi2(d1y,d1n,d2y,d2n):
+   print('\nCHI Squared test')
+   print(d1y,d1n,d2y,d2n)
+   d1_sum = (d1y+d1n)
+   d2_sum = (d2y+d2n)
+   print('Conversion Rate D1: = %.3f' % ((d1y/d1_sum)))
+   print('Conversion Rate D2: = %.3f' % ((d2y/d2_sum)))
+
+   from scipy.stats import chi2_contingency
+   observed = [
+      [d1y,d1n],
+      [d2y,d2n],
+   ]
+   chi2, p, dof, expected = chi2_contingency(observed)
+   print('\tchi-square:', chi2)
+   print('\tp-value:', p)
+   print('\tdegree of freedom:', dof)
+   #print('\texpected value table:', expected)
+
+   if p >= 0.05:
+      print('H0 is accepted')
+   else:
+      print('H0 is rejected')
+      if p < 0.001:
+         p = f'p < 0.001'
+      else:
+         p = f'p = {p:4.3f}'
+      print(f'There is a significant relationship between the two variables, <var1> are more likely than <var2> to <action>, X2 ({dof}, N = {(d1_sum+d2_sum)}) = {chi2:4.2f}, {p}.')
 
 if __name__ == "__main__":
    # 1, 2, or more arrays?
