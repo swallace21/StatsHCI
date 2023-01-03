@@ -93,18 +93,24 @@ def shapiro_wilks(d1,d2):
 
 
 # normality test for D’Agostino’s K^2 test
-def dagostino(data):
+def dagostino(d1,d2):
    """
    data should contain 1 array
    """
    # normality test
+   data = d1 + d2
    stat, p = normaltest(data)
    print('Statistics=%.3f, p=%.3f' % (stat, p))
 
    if p > alpha:
       print('Sample looks Gaussian (fail to reject H0)')
+      if len(d1) != len(d2):
+         levene_equal_variance_test(d1,d2)
+      else:
+         ttest_repeated_samples(d1,d2)
    else:
       print('Sample does not look Gaussian (reject H0)')
+      mann_whitney_u(d1,d2)
 
 # variance test
 def levene_equal_variance_test(d1,d2):
