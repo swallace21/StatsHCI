@@ -70,6 +70,28 @@ def create_contigency_table(d1,d2):
         dist = False
     return table,dist
 
+def normality(d1,d2):
+   """
+   data should contain 1 array
+   """
+   # normality test
+   data = d1 + d2
+   if len(data) > 5000:
+      stat, p = normaltest(data)
+      print('Dagostino: Statistics=%.3f, p=%.3f' % (stat, p))
+   else:
+      stat, p = shapiro(data)
+      print('Shapiro Wilks: statistic = %.3f, p = %.3f' % (stat, p))
+
+   if p > alpha:
+      print('Sample looks Gaussian (fail to reject H0)')
+      if len(d1) != len(d2):
+         levene_equal_variance_test(d1,d2)
+      else:
+         ttest_repeated_samples(d1,d2)
+   else:
+      print('Sample does not look Gaussian (reject H0)')
+      mann_whitney_u(d1,d2)
 
 # normality test for normality
 def shapiro_wilks(d1,d2):
