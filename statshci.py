@@ -49,6 +49,22 @@ def cohensd(d1,d2):
    #print(f"""cohen's d = {d}\n""")
    return d
 
+### effect size
+def effectSize(d1,d2):
+   print('Effect Size d1 / d2 = %.3f' % ((mean(d1)/mean(d2))))
+
+### effect size
+def effectSizeNonParametric(d1,d2,U1):
+   # see "Examples"
+   # https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html
+   nx, ny = len(d1), len(d2)
+   U2 = nx*ny - U1
+   U = min(U1, U2)
+   N = nx + ny
+   z = (U - nx*ny/2 + 0.5) / np.sqrt(nx*ny * (N + 1)/ 12)
+   es = z/sqrt((nx+ny))
+   print(f'z-value = {z:4.2f} and the effect size of Mann Whitney U = {es:4.2f}')
+
 # for use in chi-square,mcnemar, etc...
 def create_contigency_table(d1,d2):
     if isinstance(d1,(list,pd.core.series.Series,np.ndarray)):
@@ -166,7 +182,9 @@ def mann_whitney_u(d1,d2):
    print('Mann Whitney U')
    mean_sd('d1: ',d1)
    mean_sd('d2: ',d2)
-   stat, p = mannwhitneyu(d1, d2)
+   effectSize(d1,d2)
+   stat, p = mannwhitneyu(d1,d2)
+   effectSizeNonParametric(d1,d2,stat)
    print('Statistics = %.3f, p = %.3f' % (stat, p))
    # interpret
    alpha = 0.05
