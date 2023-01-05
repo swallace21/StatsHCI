@@ -67,24 +67,24 @@ def effectSizeNonParametric(d1,d2,U1):
 
 # for use in chi-square,mcnemar, etc...
 def create_contigency_table(d1,d2):
-    if isinstance(d1,(list,pd.core.series.Series,np.ndarray)):
-        a = np.where(d1 == 1)[0].size 
-        b = np.where(d1 == 0)[0].size
-        c = np.where(d2 == 1)[0].size
-        d = np.where(d2 == 0)[0].size
-    else:
-        a = d1.count(1)
-        b = d1.count(0)
-        c = d2.count(1)
-        d = d2.count(0)
-        
-    table = [[a,b],[c,d]]
-    # if either b or c is small (b + c < 25) then 
-    # chi^2 is not well-approximated by the chi-squared distribution.
-    dist = True
-    if (b + c) < 25:
-        dist = False
-    return table,dist
+   if isinstance(d1,(pd.core.series.Series,np.ndarray)):
+      a = np.where(d1 == 1)[0].size 
+      b = np.where(d1 == 0)[0].size
+      c = np.where(d2 == 1)[0].size
+      d = np.where(d2 == 0)[0].size
+   else:
+      a = d1.count(1)
+      b = d1.count(0)
+      c = d2.count(1)
+      d = d2.count(0)
+      
+   table = [[a,b],[c,d]]
+   # if either b or c is small (b + c < 25) then 
+   # chi^2 is not well-approximated by the chi-squared distribution.
+   dist = True
+   if (b + c) < 25:
+      dist = False
+   return table,dist
 
 def normality(d1,d2):
    """
@@ -283,32 +283,13 @@ def mcnemar(d1,d2):
    # Example of calculating the mcnemar test
    from statsmodels.stats.contingency_tables import mcnemar
    table,exact = create_contigency_table(d1,d2)
-   result = mcnemar(table, exact=False, correction=True)
+   result = mcnemar(table, exact=exact, correction=True)
+
+   print(table)
+
    odds_ratio = (table[0][1] / table[0][0]) / (table[1][1] / table[1][0])
    # summarize the finding
    print('$X^2 = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (result.statistic, result.pvalue, odds_ratio))
-
-# CHI Squared Test
-def chi2_old(d1y,d1n,d2y,d2n):
-   print('\nCHI Squared test')
-   print(d1y,d1n,d2y,d2n)
-   # print('%s (M = %.2f SD = %.2f, N = %.2f, MAX = %.2f, MIN = %.2f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
-   d1_sum = (d1y+d1n)
-   d2_sum = (d2y+d2n)
-   print('Conversion Rate D1: = %.3f' % ((d1y/d1_sum)))
-   print('Conversion Rate D2: = %.3f' % ((d2y/d2_sum)))
-   #chisq, p = chisquare([44, 56], [50, 50])
-   chisq, p = chisquare([7153, 2536], [469, 9220])
-   print(f'X^2 = {chisq}, p = {p:4.2f}')
-   
-   chisq, p = chisquare([7153, 2536], [469, 9220])
-   print(f'X^2 = {chisq}, p = {p:4.2f}')
-   
-   chisq, p = chisquare([7153, 2536], [469, 9220])
-   print(f'X^2 = {chisq}, p = {p:4.2f}')
-
-   chisq, p = chisquare([8.3661, 9.4117], [5.3973, 6.0721])
-   print(f'X^2 = {chisq}, p = {p:4.2f}')
 
 def chi2(d1y,d1n,d2y,d2n):
    print('\nCHI Squared test')
@@ -337,7 +318,7 @@ def chi2(d1y,d1n,d2y,d2n):
          p = f'p < 0.001'
       else:
          p = f'p = {p:4.3f}'
-      print(f'There is a significant relationship between the two variables, <var1> are more likely than <var2> to <action>, X2 ({dof}, N = {(d1_sum+d2_sum)}) = {chi2:4.2f}, {p}.')
+      print(f'There is a significant relationship between the two variables, <var1> are more likely than <var2> to <action>, $X^2 ({dof}, $N = {(d1_sum+d2_sum)}$) = {chi2:4.2f}$, {p}.')
 
 if __name__ == "__main__":
    # 1, 2, or more arrays?
