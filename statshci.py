@@ -77,14 +77,19 @@ def create_contigency_table(d1,d2):
       b = d1.count(0)
       c = d2.count(1)
       d = d2.count(0)
-      
-   table = [[a,b],[c,d]]
-   # if either b or c is small (b + c < 25) then 
-   # chi^2 is not well-approximated by the chi-squared distribution.
-   dist = True
-   if (b + c) < 25:
-      dist = False
-   return table,dist
+   print(a,b,c,d)
+   if a > 0 and b > 0 and c > 0 and d > 0: 
+      print(f'D1 = {(a/(a+b)):4.3f}')
+      print(f'D2 = {c/(c+d):4.3f}')
+      table = [[a,b],[c,d]]
+      # if either b or c is small (b + c < 25) then 
+      # chi^2 is not well-approximated by the chi-squared distribution.
+      dist = True
+      if (b + c) < 25:
+         dist = False
+      return table,dist,True
+   else:
+      return False
 
 def normality(d1,d2):
    """
@@ -279,17 +284,18 @@ def ttest_repeated_samples(d1,d2):
 
 # McNemar Test - non-parametric binary data
 def mcnemar(d1,d2):
-   print('\nMcNemar test')
+   print('McNemar test')
    # Example of calculating the mcnemar test
    from statsmodels.stats.contingency_tables import mcnemar
-   table,exact = create_contigency_table(d1,d2)
-   result = mcnemar(table, exact=exact, correction=True)
-
-   print(table)
-
-   odds_ratio = (table[0][1] / table[0][0]) / (table[1][1] / table[1][0])
-   # summarize the finding
-   print('$X^2 = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (result.statistic, result.pvalue, odds_ratio))
+   table,exact,valid = create_contigency_table(d1,d2)
+   if valid:
+      result = mcnemar(table, exact=exact, correction=True)
+      print(table)
+      odds_ratio = (table[0][1] / table[0][0]) / (table[1][1] / table[1][0])
+      # summarize the finding
+      print('$X^2 = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (result.statistic, result.pvalue, odds_ratio))
+   else:
+      print('Length of the groups is 0 -- cannot create contigency table')
 
 def chi2(d1y,d1n,d2y,d2n):
    print('\nCHI Squared test')
