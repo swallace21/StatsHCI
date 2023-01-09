@@ -65,8 +65,28 @@ def effectSizeNonParametric(d1,d2,U1):
    es = z/sqrt((nx+ny))
    print(f'z-value = {z:4.2f} and the effect size of Mann Whitney U = {es:4.2f}')
 
+def get_difference(current, previous, currName, prevName):
+    if current == previous:
+         print('no difference')
+    try:
+         changeType = 'increase'
+         if current < previous:
+               changeType = 'decrease'
+         diff = round((current / previous), 4)
+         if diff < 1.5:
+            change = (abs(current - previous) / previous) * 100.0
+            print(f'\tThere is a {change:4.2f}% {changeType} between {currName} and {prevName}.')
+         else:
+            print(f'\t{currName} is {diff:4.2f} times greater than {prevName}.')
+    except ZeroDivisionError:
+         return float('inf')
+
+def difference(current, previous, currName, prevName):
+   get_difference(current, previous, currName, prevName)
+   get_difference(previous, current, prevName, currName)
+
 # for use in chi-square,mcnemar, etc...
-def create_contigency_table(d1,d2):
+def create_contigency_table(d1,d2,d1Name = 'Group 1',d2Name = 'Group 2'):
    if isinstance(d1,(pd.core.series.Series,np.ndarray)):
       a = np.where(d1 == 1)[0].size 
       b = np.where(d1 == 0)[0].size
@@ -77,10 +97,13 @@ def create_contigency_table(d1,d2):
       b = d1.count(0)
       c = d2.count(1)
       d = d2.count(0)
-   print(a,b,c,d)
-   if a > 0 and b > 0 and c > 0 and d > 0: 
-      print(f'D1 = {(a/(a+b)):4.3f}')
-      print(f'D2 = {c/(c+d):4.3f}')
+   if a > 0 and b > 0 and c > 0 and d > 0:
+      avg1 = (a/(a+b)) * 1.0
+      avg2 = (c/(c+d)) * 1.0
+      #print(avg1,avg2)
+      #print(f'{d1Name} = {avg1:4.3f} :: {d2Name} = {avg2:4.3f}')
+      if avg1 > 0.0 and avg2 > 0.0:
+         difference(avg1,avg2,d1Name,d2Name)
       table = [[a,b],[c,d]]
       # if either b or c is small (b + c < 25) then 
       # chi^2 is not well-approximated by the chi-squared distribution.
@@ -281,19 +304,19 @@ def ttest_repeated_samples(d1,d2):
    d = cohensd(d1,d2)
    print(f't({df}) = {round(t,2)}, p = {round(p,4)}, d = {round(d,4)}\n')
 
-
 # McNemar Test - non-parametric binary data
-def mcnemar(d1,d2):
+def mcnemar(d1,d2,d1Name = 'Group 1',d2Name = 'Group 2'):
    print('McNemar test')
    # Example of calculating the mcnemar test
    from statsmodels.stats.contingency_tables import mcnemar
-   table,exact,valid = create_contigency_table(d1,d2)
+   table,exact,valid = create_contigency_table(d1,d2,d1Name,d2Name)
    if valid:
       result = mcnemar(table, exact=exact, correction=True)
       print(table)
       odds_ratio = (table[0][1] / table[0][0]) / (table[1][1] / table[1][0])
       # summarize the finding
-      print('$X^2 = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (result.statistic, result.pvalue, odds_ratio))
+      df = 1
+      print('$X^2(%.0i) = %.3f$, $p < %.3f$, $odds ratio = %.3f$' % (df, result.statistic, result.pvalue, odds_ratio))
    else:
       print('Length of the groups is 0 -- cannot create contigency table')
 
