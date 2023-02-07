@@ -8,6 +8,7 @@
 import pandas as pd
 import scipy.stats as sp
 import numpy as np
+from itertools import combinations
 
 from numpy import mean
 from numpy import std
@@ -22,16 +23,15 @@ from scipy.stats import levene
 from scipy.stats import mannwhitneyu
 from scipy.stats import wilcoxon
 from scipy.stats import kruskal
-from scipy.stats import chisquare
+from scipy.stats import chi2_contingency
+from statsmodels.sandbox.stats.multicomp import multipletests
 
 from math import sqrt
-
-import statsmodels.api as sm
 
 alpha = 0.05
 
 def mean_sd(name,data):
-   print('%s (M = %.2f SD = %.2f, N = %.2f, MAX = %.2f, MIN = %.2f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
+   print('\t%s (M = %.4f SD = %.2f, N = %.2f, MAX = %.2f, MIN = %.2f)' % (name, mean(data), std(data), len(data), max(data), min(data)))
 
 ### standardized effect size
 # function to calculate Cohen's d for independent samples
@@ -210,18 +210,18 @@ def mann_whitney_u(d1,d2):
    print('Mann Whitney U')
    mean_sd('d1: ',d1)
    mean_sd('d2: ',d2)
-   effectSize(d1,d2)
+   difference(mean(d1), mean(d2), 'd1', 'd2')
    stat, p = mannwhitneyu(d1,d2)
    effectSizeNonParametric(d1,d2,stat)
-   print('Statistics = %.3f, p = %.3f' % (stat, p))
+   print('Statistics = %.3f, p = %.6f' % (stat, p))
    # interpret
    alpha = 0.05
-   """
    if p > alpha:
       print('Same distribution (fail to reject H0)')
    else:
       print('Different distribution (reject H0)')
-   """
+      print(f'A Mann Whitney U test reveals this <effectSize> in <metric> is statistically significant, $U$ = {int(stat)}, $p$ < {p}.')
+   # A Mann Whitney U test reveals this 30.5\% increase in accuracy per visit in 2022 is statistically significant, $U$ = 7928, $p$ < 0.001.
 
 
 def wilcoxon_signed(d1,d2):
@@ -320,6 +320,11 @@ def mcnemar(d1,d2,d1Name = 'Group 1',d2Name = 'Group 2'):
    else:
       print('Length of the groups is 0 -- cannot create contigency table')
 
+def conversion_rate(d1y,d1n):
+   cr = (d1y/(d1y+d1n))
+   print('\t\tConversion Rate: = %.3f' % (cr))
+   return cr
+
 def chi2(d1y,d1n,d2y,d2n):
    print('\nCHI Squared test')
    print(d1y,d1n,d2y,d2n)
@@ -347,7 +352,36 @@ def chi2(d1y,d1n,d2y,d2n):
          p = f'p < 0.001'
       else:
          p = f'p = {p:4.3f}'
-      print(f'There is a significant relationship between the two variables, <var1> are more likely than <var2> to <action>, $X^2 ({dof}, $N = {(d1_sum+d2_sum)}$) = {chi2:4.2f}$, {p}.')
+      print(f'There is a significant relationship between the two variables, <var1> are more likely than <var2> to <action>, $X^2 ({dof}$, $N = {(d1_sum+d2_sum)})$ = ${chi2:4.2f}$, {p}.')
+
+def chisq_multiple_and_posthoc_corrected(df):
+    """Receives a dataframe and performs chi2 test and then post hoc.
+    Prints the p-values and corrected p-values (after FDR correction)"""
+    # start by running chi2 test on the matrix
+    chi2, p, dof, ex = chi2_contingency(df, correction=True)
+    print(f"Chi2 result of the contingency table: {chi2}, p-value: {p} :: $X^2 ({dof}$, $N = {df.values.sum()})$ = ${chi2:4.2f}$, {p}.")
+    
+    # post-hoc
+    all_combinations = list(combinations(df.index, 2))  # gathering all combinations for post-hoc chi2
+    p_vals = []
+    chi2_vals = []
+    print("Significance results:")
+    for comb in all_combinations:
+        new_df = df[(df.index == comb[0]) | (df.index == comb[1])]
+        chi2, p, dof, ex = chi2_contingency(new_df, correction=True)
+        p_vals.append(p)
+        chi2_vals.append(chi2)
+        # print(f"For {comb}: {p}")  # uncorrected
+
+    # checking significance
+    # correction for multiple testing
+    reject_list, corrected_p_vals = multipletests(p_vals, method='fdr_bh')[:2]
+    for p_val, corr_p_val, reject, comb in zip(p_vals, corrected_p_vals, reject_list, all_combinations):
+        print(f"{comb}: p_value: {p_val:5f}; corrected: {corr_p_val:5f} ({p_val}) reject: {reject}")
+        if reject:
+            print(f"""There is a significant relationship between {comb[0]} and {comb[1]}, {comb[0]} are more likely than {comb[0]} to <action>, $X^2 ({dof}$, $N = <sum__both_vars>)$ = ${chi2:4.2f}$, {p}.\n""")
+        else:
+            print()
 
 if __name__ == "__main__":
    # 1, 2, or more arrays?
